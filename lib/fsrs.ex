@@ -87,10 +87,11 @@ defmodule ExFsrs do
   def from_map(map) do
     due_date = map[:due] || map["due"]
     last_review = map[:last_review] || map["last_review"]
+    state = (map[:state] || map["state"]) |> String.to_atom()
 
     %__MODULE__{
       card_id: map[:card_id] || map["card_id"],
-      state: map[:state] || map["state"],
+      state: state,
       step: map[:step] || map["step"],
       stability: map[:stability] || map["stability"],
       difficulty: map[:difficulty] || map["difficulty"],
