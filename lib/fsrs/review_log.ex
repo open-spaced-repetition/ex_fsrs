@@ -75,7 +75,7 @@ defmodule ExFsrs.ReviewLog do
       card: ExFsrs.from_map(map["card"]),
       rating: String.to_existing_atom(map["rating"]),
       review_datetime: case DateTime.from_iso8601(map["review_datetime"]) do
-        {:ok, datetime} -> datetime
+        {:ok, datetime, 0} -> datetime
         _ -> raise "Invalid ISO8601 datetime format for review_datetime"
       end,
       review_duration: map["review_duration"]
