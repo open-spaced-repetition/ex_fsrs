@@ -130,8 +130,12 @@ defmodule ExFsrs.Scheduler do
       last_review -> DateTime.diff(review_datetime, last_review, :day)
     end
 
+    card_state = case is_atom(card.state) do
+      true -> card.state
+      false -> card.state |> String.to_atom()
+    end
     # Update card based on state
-    updated_card = case card.state do
+    updated_card = case card_state do
       :learning -> update_learning_card(card, rating, review_datetime, scheduler)
       :review -> update_review_card(card, rating, review_datetime, scheduler)
       :relearning -> update_relearning_card(card, rating, review_datetime, scheduler)
@@ -311,7 +315,7 @@ defmodule ExFsrs.Scheduler do
     next_interval = round(next_interval)  # intervals are full days
     next_interval = max(next_interval, 1)  # must be at least 1 day long
     next_interval = min(next_interval, scheduler.maximum_interval)  # can not be longer than the maximum interval
-    next_interval * 24 * 60  # převod dnů na minuty
+    next_interval * 24 * 60  # convert days to minutes
   end
 
   def get_fuzzed_interval(interval) do
@@ -461,4 +465,9 @@ defmodule ExFsrs.Scheduler do
         :math.pow(1 + @factor * elapsed_days / card.stability, @decay)
     end
   end
+
+  # # TODO: This function is currently unused and can be removed in future cleanup
+  # defp relearning_stability(_difficulty, stability, _scheduler) do
+  #   stability
+  # end
 end
