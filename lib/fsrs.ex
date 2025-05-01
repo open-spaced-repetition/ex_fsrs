@@ -64,6 +64,8 @@ defmodule ExFsrs do
     - Map representation of the card
   """
   def to_map(%__MODULE__{} = card) do
+    last_review = if card.last_review, do: DateTime.to_iso8601(card.last_review), else: nil
+
     %{
       "card_id" => card.card_id,
       "state" => card.state,
@@ -71,7 +73,7 @@ defmodule ExFsrs do
       "stability" => card.stability,
       "difficulty" => card.difficulty,
       "due" => DateTime.to_iso8601(card.due),
-      "last_review" => if(card.last_review, do: DateTime.to_iso8601(card.last_review), else: nil)
+      "last_review" => last_review
     }
   end
 
@@ -86,21 +88,17 @@ defmodule ExFsrs do
   """
   def from_map(map) do
     due_date = map[:due] || map["due"]
-    last_review = map[:last_review] || map["last_review"]
-    state = (map[:state] || map["state"]) |> String.to_atom()
 
-    %__MODULE__{
-      card_id: map[:card_id] || map["card_id"],
-      state: state,
-      step: map[:step] || map["step"],
-      stability: map[:stability] || map["stability"],
-      difficulty: map[:difficulty] || map["difficulty"],
-      due: case DateTime.from_iso8601(due_date) do
+    due =
+      case DateTime.from_iso8601(due_date) do
         {:ok, datetime, 0} -> datetime
         error ->
           raise "Invalid ISO8601 datetime format for due date: #{inspect(due_date)}"
-      end,
-      last_review: if last_review do
+      end
+
+    last_review = map[:last_review] || map["last_review"]
+    last_review =
+      if last_review do
         case DateTime.from_iso8601(last_review) do
           {:ok, datetime, 0} -> datetime
           error ->
@@ -109,6 +107,17 @@ defmodule ExFsrs do
       else
         nil
       end
+
+    state = (map[:state] || map["state"]) |> String.to_atom()
+
+    %__MODULE__{
+      card_id: map[:card_id] || map["card_id"],
+      state: state,
+      step: map[:step] || map["step"],
+      stability: map[:stability] || map["stability"],
+      difficulty: map[:difficulty] || map["difficulty"],
+      due: due,
+      last_review: last_review
     }
   end
 
