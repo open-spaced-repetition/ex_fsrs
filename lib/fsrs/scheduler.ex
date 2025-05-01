@@ -6,8 +6,8 @@ defmodule ExFsrs.Scheduler do
 
   alias ExFsrs
 
-  @learning_steps [60.0, 600.0]  # 1 minuta, 10 minut
-  @relearning_steps [600.0]  # 10 minut
+  @learning_steps [1.0, 10.0]  # 1 minute, 10 minutes
+  @relearning_steps [10.0]  # 10 minutes
   @maximum_interval 36500
   @default_parameters [
     0.40255,  # initial stability for again
@@ -172,15 +172,15 @@ defmodule ExFsrs.Scheduler do
         if card.step + 1 == length(scheduler.learning_steps) do
           {:review, nil, next_interval(stability, scheduler)}
         else
-          {:learning, 0, Enum.at(scheduler.learning_steps, 0, 60)}
+          {:learning, 0, Enum.at(scheduler.learning_steps, 0, 1)}
         end
 
       :hard ->
         interval = cond do
           card.step == 0 and length(scheduler.learning_steps) == 1 ->
-            Enum.at(scheduler.learning_steps, 0, 60) * 1.5
+            Enum.at(scheduler.learning_steps, 0, 1) * 1.5
           card.step == 0 and length(scheduler.learning_steps) >= 2 ->
-            (Enum.at(scheduler.learning_steps, 0, 60) + Enum.at(scheduler.learning_steps, 1, 600)) / 2.0
+            (Enum.at(scheduler.learning_steps, 0, 1) + Enum.at(scheduler.learning_steps, 1, 10)) / 2.0
           true ->
             Enum.at(scheduler.learning_steps, card.step, 600)
         end
@@ -190,7 +190,7 @@ defmodule ExFsrs.Scheduler do
         if card.step + 1 == length(scheduler.learning_steps) do
           {:review, nil, next_interval(stability, scheduler)}
         else
-          {:learning, card.step + 1, Enum.at(scheduler.learning_steps, card.step + 1, 600)}
+          {:learning, card.step + 1, Enum.at(scheduler.learning_steps, card.step + 1, 10)}
         end
 
       :easy ->
@@ -265,20 +265,16 @@ defmodule ExFsrs.Scheduler do
 
     {next_state, next_step, next_interval} = case rating do
       :again ->
-        if card.step + 1 == length(scheduler.relearning_steps) do
-          {:review, nil, next_interval(stability, scheduler)}
-        else
-          {:relearning, 0, Enum.at(scheduler.relearning_steps, 0, 600)}
-        end
+        {:relearning, 0, Enum.at(scheduler.relearning_steps, 0, 10)}
 
       :hard ->
         interval = cond do
           card.step == 0 and length(scheduler.relearning_steps) == 1 ->
-            Enum.at(scheduler.relearning_steps, 0, 600) * 1.5
+            Enum.at(scheduler.relearning_steps, 0, 10) * 1.5
           card.step == 0 and length(scheduler.relearning_steps) >= 2 ->
-            (Enum.at(scheduler.relearning_steps, 0, 600) + Enum.at(scheduler.relearning_steps, 1, 1200)) / 2.0
+            (Enum.at(scheduler.relearning_steps, 0, 10) + Enum.at(scheduler.relearning_steps, 1, 20)) / 2.0
           true ->
-            Enum.at(scheduler.relearning_steps, card.step, 600)
+            Enum.at(scheduler.relearning_steps, card.step, 10)
         end
         {:relearning, card.step, interval}
 
@@ -286,15 +282,21 @@ defmodule ExFsrs.Scheduler do
         if card.step + 1 == length(scheduler.relearning_steps) do
           {:review, nil, next_interval(stability, scheduler)}
         else
-          {:relearning, card.step + 1, Enum.at(scheduler.relearning_steps, card.step + 1, 600)}
+          {:relearning, card.step + 1, Enum.at(scheduler.relearning_steps, card.step + 1, 10)}
         end
 
       :easy ->
         {:review, nil, next_interval(stability, scheduler)}
     end
 
+    fuzzing_interval = prepare_interval_for_fuzzing(next_interval, next_state, card.state)
     next_interval = if scheduler.enable_fuzzing and next_state == :review do
-      get_fuzzed_interval(next_interval)
+      fuzzed = get_fuzzed_interval(fuzzing_interval)
+      if card.state == :relearning do
+        fuzzed * 24 * 60
+      else
+        fuzzed
+      end
     else
       next_interval
     end
@@ -466,8 +468,11 @@ defmodule ExFsrs.Scheduler do
     end
   end
 
-  # # TODO: This function is currently unused and can be removed in future cleanup
-  # defp relearning_stability(_difficulty, stability, _scheduler) do
-  #   stability
-  # end
+  defp prepare_interval_for_fuzzing(interval, next_state, current_state) do
+    if current_state == :relearning and next_state == :review do
+      interval / (24 * 60)
+    else
+      interval
+    end
+  end
 end
