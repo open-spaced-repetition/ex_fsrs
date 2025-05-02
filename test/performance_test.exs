@@ -4,7 +4,6 @@ defmodule ExFsrs.PerformanceTest do
   @tag timeout: 120_000 # 2 minutes
   @tag :performance
   test "simulate many reviews over long time period" do
-    scheduler = ExFsrs.Scheduler.new()
     now = DateTime.utc_now()
 
     # Create new card

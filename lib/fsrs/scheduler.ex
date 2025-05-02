@@ -52,24 +52,6 @@ defmodule ExFsrs.Scheduler do
   @decay -0.5
   @factor :math.pow(0.9, 1 / @decay) - 1
 
-  @fuzz_ranges [
-    %{
-      start: 2.5,
-      end: 7.0,
-      factor: 0.15
-    },
-    %{
-      start: 7.0,
-      end: 20.0,
-      factor: 0.1
-    },
-    %{
-      start: 20.0,
-      end: :infinity,
-      factor: 0.05
-    }
-  ]
-
   @doc """
   Creates a new scheduler with default parameters.
 
@@ -124,11 +106,6 @@ defmodule ExFsrs.Scheduler do
     review_datetime \\ DateTime.utc_now(),
     review_duration \\ nil
   ) do
-    # Calculate days since last review
-    days_since_last_review = case card.last_review do
-      nil -> nil
-      last_review -> DateTime.diff(review_datetime, last_review, :day)
-    end
 
     card_state = case is_atom(card.state) do
       true -> card.state
@@ -344,21 +321,6 @@ defmodule ExFsrs.Scheduler do
         max_ivl = min(interval + round(interval * 0.05), 36500)
         min_ivl + (:rand.uniform() * (max_ivl - min_ivl))
     end |> round()
-  end
-
-  defp get_fuzz_range(interval_days) do
-    cond do
-      interval_days < 2.5 -> {interval_days, interval_days}
-      interval_days < 7.0 ->
-        delta = round(interval_days * 0.15)
-        {max(2, interval_days - delta), min(interval_days + delta, 36500)}
-      interval_days < 20.0 ->
-        delta = round(interval_days * 0.1)
-        {max(2, interval_days - delta), min(interval_days + delta, 36500)}
-      true ->
-        delta = round(interval_days * 0.05)
-        {max(2, interval_days - delta), min(interval_days + delta, 36500)}
-    end
   end
 
   defp initial_stability(rating, _scheduler) do

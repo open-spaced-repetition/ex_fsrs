@@ -308,7 +308,6 @@ defmodule ExFsrs.SchedulerTest do
   # Tests for private functions using function capture
   describe "internal utility functions" do
     test "rating_to_number/1 converts rating atoms to numbers" do
-      rating_to_number = :erlang.fun_to_list(&ExFsrs.Scheduler.rating_to_number/1)
 
       assert ExFsrs.Scheduler.rating_to_number(:again) == 1
       assert ExFsrs.Scheduler.rating_to_number(:hard) == 2

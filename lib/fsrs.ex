@@ -92,7 +92,7 @@ defmodule ExFsrs do
     due =
       case DateTime.from_iso8601(due_date) do
         {:ok, datetime, 0} -> datetime
-        error ->
+        _ ->
           raise "Invalid ISO8601 datetime format for due date: #{inspect(due_date)}"
       end
 
@@ -101,7 +101,7 @@ defmodule ExFsrs do
       if last_review do
         case DateTime.from_iso8601(last_review) do
           {:ok, datetime, 0} -> datetime
-          error ->
+          _ ->
             raise "Invalid ISO8601 datetime format for last_review: #{inspect(last_review)}"
         end
       else
