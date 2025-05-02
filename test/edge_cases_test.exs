@@ -7,11 +7,13 @@ defmodule ExFsrs.EdgeCasesTest do
       now = DateTime.utc_now()
 
       # Create a card with extremely high stability
-      card = ExFsrs.new(
-        state: :review,
-        stability: 1_000_000.0, # Very high stability
-        difficulty: 5.0
-      )
+      card =
+        ExFsrs.new(
+          state: :review,
+          # Very high stability
+          stability: 1_000_000.0,
+          difficulty: 5.0
+        )
 
       # Review with 'good'
       {updated_card, _} = ExFsrs.Scheduler.review_card(scheduler, card, :good, now)
@@ -26,11 +28,13 @@ defmodule ExFsrs.EdgeCasesTest do
       now = DateTime.utc_now()
 
       # Create a card with extremely low stability
-      card = ExFsrs.new(
-        state: :review,
-        stability: 0.1, # Very low stability
-        difficulty: 5.0
-      )
+      card =
+        ExFsrs.new(
+          state: :review,
+          # Very low stability
+          stability: 0.1,
+          difficulty: 5.0
+        )
 
       # Review with 'good'
       {updated_card, _} = ExFsrs.Scheduler.review_card(scheduler, card, :good, now)
@@ -45,11 +49,12 @@ defmodule ExFsrs.EdgeCasesTest do
       now = DateTime.utc_now()
 
       # Create a card with nil stability and difficulty
-      card = ExFsrs.new(
-        state: :learning,
-        stability: nil,
-        difficulty: nil
-      )
+      card =
+        ExFsrs.new(
+          state: :learning,
+          stability: nil,
+          difficulty: nil
+        )
 
       # Should not raise errors
       {updated_card, _} = ExFsrs.Scheduler.review_card(scheduler, card, :good, now)
@@ -81,11 +86,12 @@ defmodule ExFsrs.EdgeCasesTest do
       now = DateTime.utc_now()
 
       # Create a review card
-      card = ExFsrs.new(
-        state: :review,
-        stability: 10.0,
-        difficulty: 5.0
-      )
+      card =
+        ExFsrs.new(
+          state: :review,
+          stability: 10.0,
+          difficulty: 5.0
+        )
 
       # Review with 'again' should keep it in review state due to empty relearning steps
       {updated_card, _} = ExFsrs.Scheduler.review_card(scheduler, card, :again, now)
@@ -100,22 +106,24 @@ defmodule ExFsrs.EdgeCasesTest do
       now = DateTime.utc_now()
 
       # Create a card with maximum difficulty
-      max_card = ExFsrs.new(
-        state: :review,
-        stability: 10.0,
-        difficulty: 10.0
-      )
+      max_card =
+        ExFsrs.new(
+          state: :review,
+          stability: 10.0,
+          difficulty: 10.0
+        )
 
       # Even with 'again' rating, difficulty should not exceed 10.0
       {updated_max, _} = ExFsrs.Scheduler.review_card(scheduler, max_card, :again, now)
       assert updated_max.difficulty <= 10.0
 
       # Create a card with minimum difficulty
-      min_card = ExFsrs.new(
-        state: :review,
-        stability: 10.0,
-        difficulty: 1.0
-      )
+      min_card =
+        ExFsrs.new(
+          state: :review,
+          stability: 10.0,
+          difficulty: 1.0
+        )
 
       # Even with 'easy' rating, difficulty should not go below 1.0
       {updated_min, _} = ExFsrs.Scheduler.review_card(scheduler, min_card, :easy, now)
@@ -127,20 +135,26 @@ defmodule ExFsrs.EdgeCasesTest do
 
       # Various test cases with different stability and days since review
       test_cases = [
-        {10.0, 0}, # Just reviewed, should be close to 1.0
-        {10.0, 10}, # Should be around 0.5
-        {10.0, 100}, # Should be close to 0.0
-        {1.0, 1}, # Low stability, should be around 0.5
-        {100.0, 10} # High stability, should be close to 1.0
+        # Just reviewed, should be close to 1.0
+        {10.0, 0},
+        # Should be around 0.5
+        {10.0, 10},
+        # Should be close to 0.0
+        {10.0, 100},
+        # Low stability, should be around 0.5
+        {1.0, 1},
+        # High stability, should be close to 1.0
+        {100.0, 10}
       ]
 
       Enum.each(test_cases, fn {stability, days} ->
-        card = ExFsrs.new(
-          state: :review,
-          stability: stability,
-          difficulty: 5.0,
-          last_review: DateTime.add(now, -days, :day)
-        )
+        card =
+          ExFsrs.new(
+            state: :review,
+            stability: stability,
+            difficulty: 5.0,
+            last_review: DateTime.add(now, -days, :day)
+          )
 
         # Call private function via module function call
         retrievability = ExFsrs.get_retrievability(card, now)

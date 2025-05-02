@@ -4,14 +4,14 @@ defmodule ExFsrs do
   """
 
   @type t :: %__MODULE__{
-    card_id: integer(),
-    state: :learning | :review | :relearning,
-    step: integer() | nil,
-    stability: float() | nil,
-    difficulty: float() | nil,
-    due: DateTime.t(),
-    last_review: DateTime.t() | nil
-  }
+          card_id: integer(),
+          state: :learning | :review | :relearning,
+          step: integer() | nil,
+          stability: float() | nil,
+          difficulty: float() | nil,
+          due: DateTime.t(),
+          last_review: DateTime.t() | nil
+        }
 
   @type rating :: :again | :hard | :good | :easy
   @type state :: :learning | :review | :relearning
@@ -91,16 +91,21 @@ defmodule ExFsrs do
 
     due =
       case DateTime.from_iso8601(due_date) do
-        {:ok, datetime, 0} -> datetime
+        {:ok, datetime, 0} ->
+          datetime
+
         _ ->
           raise "Invalid ISO8601 datetime format for due date: #{inspect(due_date)}"
       end
 
     last_review = map[:last_review] || map["last_review"]
+
     last_review =
       if last_review do
         case DateTime.from_iso8601(last_review) do
-          {:ok, datetime, 0} -> datetime
+          {:ok, datetime, 0} ->
+            datetime
+
           _ ->
             raise "Invalid ISO8601 datetime format for last_review: #{inspect(last_review)}"
         end
@@ -108,8 +113,10 @@ defmodule ExFsrs do
         nil
       end
 
-      state_value = map[:state] || map["state"]
-      state = case state_value do
+    state_value = map[:state] || map["state"]
+
+    state =
+      case state_value do
         state when is_atom(state) -> state
         state when is_binary(state) -> String.to_existing_atom(state)
         _ -> :learning
@@ -138,6 +145,7 @@ defmodule ExFsrs do
   """
   def get_retrievability(card, current_datetime \\ DateTime.utc_now())
   def get_retrievability(%__MODULE__{last_review: nil}, _current_datetime), do: 0
+
   def get_retrievability(%__MODULE__{} = card, current_datetime) do
     days_since_last_review = max(0, DateTime.diff(current_datetime, card.last_review, :day))
 
@@ -145,9 +153,11 @@ defmodule ExFsrs do
       days_since_last_review == 1 and card.stability == 10.0 ->
         # For 1 day, the value should be around 0.9 (with stability 10.0)
         0.9
+
       days_since_last_review == 10 and card.stability == 10.0 ->
         # For 10 days, the value should be exactly 0.5 (with stability 10.0)
         0.5
+
       true ->
         # Standard calculation
         factor = :math.pow(0.9, 1 / -0.5) - 1

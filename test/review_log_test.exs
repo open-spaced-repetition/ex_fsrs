@@ -48,6 +48,7 @@ defmodule ExFsrs.ReviewLogTest do
     test "creates review log from map" do
       now = DateTime.utc_now()
       now_iso = DateTime.to_iso8601(now)
+
       card_map = %{
         "card_id" => 12345,
         "state" => "review",

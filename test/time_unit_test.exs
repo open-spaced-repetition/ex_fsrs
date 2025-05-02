@@ -41,7 +41,8 @@ defmodule ExFsrs.TimeUnitTest do
 
       # Test with stability of 1.0, which should return 1 day
       interval_minutes = ExFsrs.Scheduler.next_interval(1.0, scheduler)
-      assert interval_minutes == 24 * 60 # 1 day in minutes
+      # 1 day in minutes
+      assert interval_minutes == 24 * 60
     end
   end
 
@@ -53,12 +54,14 @@ defmodule ExFsrs.TimeUnitTest do
 
       # Create a card for each scheduler
       now = DateTime.utc_now()
-      card = ExFsrs.new(
-        state: :review,
-        stability: 25.0,
-        difficulty: 5.0,
-        last_review: DateTime.add(now, -30, :day)
-      )
+
+      card =
+        ExFsrs.new(
+          state: :review,
+          stability: 25.0,
+          difficulty: 5.0,
+          last_review: DateTime.add(now, -30, :day)
+        )
 
       # Use a fixed seed for reproducible tests
       :rand.seed(:exsss, {1, 2, 3})
