@@ -123,7 +123,6 @@ defmodule ExFsrs.EdgeCasesTest do
     end
 
     test "retrievability is between 0 and 1" do
-      scheduler = ExFsrs.Scheduler.new()
       now = DateTime.utc_now()
 
       # Various test cases with different stability and days since review
