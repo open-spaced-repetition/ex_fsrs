@@ -54,10 +54,10 @@ defmodule ExFsrs.ReviewLog do
   """
   def to_map(%__MODULE__{} = log) do
     %{
-      card: ExFsrs.to_map(log.card),
-      rating: log.rating,
-      review_datetime: DateTime.to_iso8601(log.review_datetime),
-      review_duration: log.review_duration
+      "card" => ExFsrs.to_map(log.card),
+      "rating" => log.rating,
+      "review_datetime" => DateTime.to_iso8601(log.review_datetime),
+      "review_duration" => log.review_duration
     }
   end
 
@@ -71,17 +71,42 @@ defmodule ExFsrs.ReviewLog do
     - ReviewLog struct
   """
   def from_map(map) do
-    review_datetime =
-      case DateTime.from_iso8601(map["review_datetime"]) do
-        {:ok, datetime, 0} -> datetime
-        _ -> raise "Invalid ISO8601 datetime format for review_datetime"
-      end
+    # Extract review_datetime
+    review_datetime_value = map["review_datetime"]
+    review_datetime = cond do
+      is_nil(review_datetime_value) -> DateTime.utc_now()
+      is_binary(review_datetime_value) ->
+        case DateTime.from_iso8601(review_datetime_value) do
+          {:ok, datetime, 0} -> datetime
+          _ -> raise "Invalid ISO8601 datetime format for review_datetime"
+        end
+      true -> review_datetime_value
+    end
 
+    # Extract rating
+    rating_value = map["rating"] || map[:rating]
+    rating = cond do
+      is_atom(rating_value) -> rating_value
+      is_binary(rating_value) -> String.to_existing_atom(rating_value)
+      true -> :good
+    end
+
+    # Extract card
+    card_data = map["card"]
+    card = cond do
+      is_nil(card_data) -> ExFsrs.new()
+      true -> ExFsrs.from_map(card_data)
+    end
+
+    # Extract review_duration
+    review_duration = map["review_duration"]
+
+    # Create the structure
     %__MODULE__{
-      card: ExFsrs.from_map(map["card"]),
-      rating: String.to_existing_atom(map["rating"]),
+      card: card,
+      rating: rating,
       review_datetime: review_datetime,
-      review_duration: map["review_duration"]
+      review_duration: review_duration
     }
   end
 end
