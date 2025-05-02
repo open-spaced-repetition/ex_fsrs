@@ -9,11 +9,11 @@ defmodule ExFsrs.ReviewLog do
   alias ExFsrs
 
   @type t :: %__MODULE__{
-    card: ExFsrs.t(),
-    rating: ExFsrs.rating(),
-    review_datetime: DateTime.t(),
-    review_duration: integer() | nil
-  }
+          card: ExFsrs.t(),
+          rating: ExFsrs.rating(),
+          review_datetime: DateTime.t(),
+          review_duration: integer() | nil
+        }
 
   defstruct [
     :card,
@@ -73,30 +73,40 @@ defmodule ExFsrs.ReviewLog do
   def from_map(map) do
     # Extract review_datetime
     review_datetime_value = map["review_datetime"]
-    review_datetime = cond do
-      is_nil(review_datetime_value) -> DateTime.utc_now()
-      is_binary(review_datetime_value) ->
-        case DateTime.from_iso8601(review_datetime_value) do
-          {:ok, datetime, 0} -> datetime
-          _ -> raise "Invalid ISO8601 datetime format for review_datetime"
-        end
-      true -> review_datetime_value
-    end
+
+    review_datetime =
+      cond do
+        is_nil(review_datetime_value) ->
+          DateTime.utc_now()
+
+        is_binary(review_datetime_value) ->
+          case DateTime.from_iso8601(review_datetime_value) do
+            {:ok, datetime, 0} -> datetime
+            _ -> raise "Invalid ISO8601 datetime format for review_datetime"
+          end
+
+        true ->
+          review_datetime_value
+      end
 
     # Extract rating
     rating_value = map["rating"] || map[:rating]
-    rating = cond do
-      is_atom(rating_value) -> rating_value
-      is_binary(rating_value) -> String.to_existing_atom(rating_value)
-      true -> :good
-    end
+
+    rating =
+      cond do
+        is_atom(rating_value) -> rating_value
+        is_binary(rating_value) -> String.to_existing_atom(rating_value)
+        true -> :good
+      end
 
     # Extract card
     card_data = map["card"]
-    card = cond do
-      is_nil(card_data) -> ExFsrs.new()
-      true -> ExFsrs.from_map(card_data)
-    end
+
+    card =
+      cond do
+        is_nil(card_data) -> ExFsrs.new()
+        true -> ExFsrs.from_map(card_data)
+      end
 
     # Extract review_duration
     review_duration = map["review_duration"]

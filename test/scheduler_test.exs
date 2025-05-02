@@ -16,14 +16,16 @@ defmodule ExFsrs.SchedulerTest do
 
     test "creates new scheduler with custom parameters" do
       custom_params = List.duplicate(1.0, 19)
-      scheduler = ExFsrs.Scheduler.new(
-        parameters: custom_params,
-        desired_retention: 0.8,
-        learning_steps: [5.0, 15.0],
-        relearning_steps: [20.0],
-        maximum_interval: 1000,
-        enable_fuzzing: false
-      )
+
+      scheduler =
+        ExFsrs.Scheduler.new(
+          parameters: custom_params,
+          desired_retention: 0.8,
+          learning_steps: [5.0, 15.0],
+          relearning_steps: [20.0],
+          maximum_interval: 1000,
+          enable_fuzzing: false
+        )
 
       assert scheduler.parameters == custom_params
       assert scheduler.desired_retention == 0.8
@@ -107,13 +109,15 @@ defmodule ExFsrs.SchedulerTest do
     setup do
       scheduler = ExFsrs.Scheduler.new(enable_fuzzing: false)
       now = DateTime.utc_now()
-      card = ExFsrs.new(
-        state: :review,
-        stability: 10.0,
-        difficulty: 5.0,
-        last_review: DateTime.add(now, -10, :day),
-        due: now
-      )
+
+      card =
+        ExFsrs.new(
+          state: :review,
+          stability: 10.0,
+          difficulty: 5.0,
+          last_review: DateTime.add(now, -10, :day),
+          due: now
+        )
 
       {:ok, scheduler: scheduler, now: now, card: card}
     end
@@ -124,7 +128,8 @@ defmodule ExFsrs.SchedulerTest do
       assert updated_card.state == :relearning
       assert updated_card.step == 0
       assert updated_card.stability != nil
-      assert updated_card.difficulty > card.difficulty # Difficulty should increase
+      # Difficulty should increase
+      assert updated_card.difficulty > card.difficulty
 
       # Due in approximately 10 minutes
       assert DateTime.diff(updated_card.due, now, :minute) == 10
@@ -136,7 +141,8 @@ defmodule ExFsrs.SchedulerTest do
       assert updated_card.state == :review
       assert updated_card.step == nil
       assert updated_card.stability != nil
-      assert updated_card.difficulty > card.difficulty # Difficulty should increase
+      # Difficulty should increase
+      assert updated_card.difficulty > card.difficulty
 
       # Due in future days (depends on stability calculation)
       assert DateTime.diff(updated_card.due, now, :day) > 0
@@ -147,7 +153,8 @@ defmodule ExFsrs.SchedulerTest do
 
       assert updated_card.state == :review
       assert updated_card.step == nil
-      assert updated_card.stability > card.stability # Stability should increase
+      # Stability should increase
+      assert updated_card.stability > card.stability
 
       # Due in future days (more than hard rating)
       assert DateTime.diff(updated_card.due, now, :day) > 0
@@ -158,7 +165,8 @@ defmodule ExFsrs.SchedulerTest do
 
       assert updated_card.state == :review
       assert updated_card.step == nil
-      assert updated_card.stability > card.stability # Stability should increase significantly
+      # Stability should increase significantly
+      assert updated_card.stability > card.stability
 
       # Due in future days (more than good rating)
       days_until_due = DateTime.diff(updated_card.due, now, :day)
@@ -170,43 +178,60 @@ defmodule ExFsrs.SchedulerTest do
     setup do
       scheduler = ExFsrs.Scheduler.new(enable_fuzzing: false)
       now = DateTime.utc_now()
-      card = ExFsrs.new(
-        state: :relearning,
-        step: 0,
-        stability: 5.0,
-        difficulty: 7.0,
-        last_review: DateTime.add(now, -1, :day),
-        due: now
-      )
+
+      card =
+        ExFsrs.new(
+          state: :relearning,
+          step: 0,
+          stability: 5.0,
+          difficulty: 7.0,
+          last_review: DateTime.add(now, -1, :day),
+          due: now
+        )
 
       {:ok, scheduler: scheduler, now: now, card: card}
     end
 
-    test "reviews relearning card with 'again' rating", %{scheduler: scheduler, now: now, card: card} do
+    test "reviews relearning card with 'again' rating", %{
+      scheduler: scheduler,
+      now: now,
+      card: card
+    } do
       {updated_card, _log} = ExFsrs.Scheduler.review_card(scheduler, card, :again, now)
 
       assert updated_card.state == :relearning
       assert updated_card.step == 0
-      assert updated_card.stability < card.stability # Stability should decrease
-      assert updated_card.difficulty > card.difficulty # Difficulty should increase
+      # Stability should decrease
+      assert updated_card.stability < card.stability
+      # Difficulty should increase
+      assert updated_card.difficulty > card.difficulty
 
       # Due in approximately 10 minutes
       assert DateTime.diff(updated_card.due, now, :minute) == 10
     end
 
-    test "reviews relearning card with 'hard' rating", %{scheduler: scheduler, now: now, card: card} do
+    test "reviews relearning card with 'hard' rating", %{
+      scheduler: scheduler,
+      now: now,
+      card: card
+    } do
       {updated_card, _log} = ExFsrs.Scheduler.review_card(scheduler, card, :hard, now)
 
       assert updated_card.state == :relearning
       assert updated_card.step == 0
       assert updated_card.stability != nil
-      assert updated_card.difficulty > card.difficulty # Difficulty should increase
+      # Difficulty should increase
+      assert updated_card.difficulty > card.difficulty
 
       # Due in 15 minutes (10 * 1.5)
       assert DateTime.diff(updated_card.due, now, :minute) == 15
     end
 
-    test "reviews relearning card with 'good' rating", %{scheduler: scheduler, now: now, card: card} do
+    test "reviews relearning card with 'good' rating", %{
+      scheduler: scheduler,
+      now: now,
+      card: card
+    } do
       {updated_card, _log} = ExFsrs.Scheduler.review_card(scheduler, card, :good, now)
 
       assert updated_card.state == :review
@@ -217,12 +242,17 @@ defmodule ExFsrs.SchedulerTest do
       assert DateTime.diff(updated_card.due, now, :day) > 0
     end
 
-    test "reviews relearning card with 'easy' rating", %{scheduler: scheduler, now: now, card: card} do
+    test "reviews relearning card with 'easy' rating", %{
+      scheduler: scheduler,
+      now: now,
+      card: card
+    } do
       {updated_card, _log} = ExFsrs.Scheduler.review_card(scheduler, card, :easy, now)
 
       assert updated_card.state == :review
       assert updated_card.step == nil
-      assert updated_card.stability > card.stability # Stability should increase significantly
+      # Stability should increase significantly
+      assert updated_card.stability > card.stability
 
       # Due in future days (more than good rating)
       assert DateTime.diff(updated_card.due, now, :day) > 0
@@ -235,10 +265,14 @@ defmodule ExFsrs.SchedulerTest do
 
       # Test with different stability values
       intervals = [
-        {1.0, 1 * 24 * 60}, # 1 day in minutes
-        {5.0, 5 * 24 * 60}, # 5 days in minutes
-        {25.0, 25 * 24 * 60}, # 25 days in minutes
-        {100.0, 100 * 24 * 60} # 100 days in minutes
+        # 1 day in minutes
+        {1.0, 1 * 24 * 60},
+        # 5 days in minutes
+        {5.0, 5 * 24 * 60},
+        # 25 days in minutes
+        {25.0, 25 * 24 * 60},
+        # 100 days in minutes
+        {100.0, 100 * 24 * 60}
       ]
 
       Enum.each(intervals, fn {stability, expected_minutes} ->
@@ -252,7 +286,8 @@ defmodule ExFsrs.SchedulerTest do
 
       # Even with very high stability, should not exceed maximum
       result = ExFsrs.Scheduler.next_interval(1000.0, scheduler)
-      assert result == 100 * 24 * 60 # 100 days in minutes
+      # 100 days in minutes
+      assert result == 100 * 24 * 60
     end
   end
 
@@ -274,8 +309,8 @@ defmodule ExFsrs.SchedulerTest do
 
       # Fuzz should be within 15% of original
       delta = original * 0.15
-      assert result >= (original - delta)
-      assert result <= (original + delta)
+      assert result >= original - delta
+      assert result <= original + delta
     end
 
     test "correctly fuzzes intervals between 7.0 and 20.0" do
@@ -287,8 +322,8 @@ defmodule ExFsrs.SchedulerTest do
 
       # Fuzz should be within 10% of original
       delta = original * 0.1
-      assert result >= (original - delta)
-      assert result <= (original + delta)
+      assert result >= original - delta
+      assert result <= original + delta
     end
 
     test "correctly fuzzes intervals above 20.0" do
@@ -300,15 +335,14 @@ defmodule ExFsrs.SchedulerTest do
 
       # Fuzz should be within 5% of original
       delta = original * 0.05
-      assert result >= (original - delta)
-      assert result <= (original + delta)
+      assert result >= original - delta
+      assert result <= original + delta
     end
   end
 
   # Tests for private functions using function capture
   describe "internal utility functions" do
     test "rating_to_number/1 converts rating atoms to numbers" do
-
       assert ExFsrs.Scheduler.rating_to_number(:again) == 1
       assert ExFsrs.Scheduler.rating_to_number(:hard) == 2
       assert ExFsrs.Scheduler.rating_to_number(:good) == 3

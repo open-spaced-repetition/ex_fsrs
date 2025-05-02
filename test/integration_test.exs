@@ -15,7 +15,8 @@ defmodule ExFsrs.IntegrationTest do
       assert log1.rating == :good
 
       # Move time forward 10 minutes
-      now = DateTime.add(card.due, 1, :minute) # Just after due
+      # Just after due
+      now = DateTime.add(card.due, 1, :minute)
 
       # Second review with "good" rating, should move to review state
       {card, log2} = ExFsrs.review_card(card, :good, now)
@@ -68,7 +69,9 @@ defmodule ExFsrs.IntegrationTest do
       assert restored_card.stability == reviewed_card.stability
       assert restored_card.difficulty == reviewed_card.difficulty
       assert DateTime.to_iso8601(restored_card.due) == DateTime.to_iso8601(reviewed_card.due)
-      assert DateTime.to_iso8601(restored_card.last_review) == DateTime.to_iso8601(reviewed_card.last_review)
+
+      assert DateTime.to_iso8601(restored_card.last_review) ==
+               DateTime.to_iso8601(reviewed_card.last_review)
     end
 
     test "round-trip review log through map conversion" do
@@ -84,9 +87,13 @@ defmodule ExFsrs.IntegrationTest do
       # Verify fields match
       assert restored_log.card.card_id == log_struct.card.card_id
       assert restored_log.rating == log_struct.rating
-      assert DateTime.to_date(restored_log.review_datetime) == DateTime.to_date(log_struct.review_datetime)
+
+      assert DateTime.to_date(restored_log.review_datetime) ==
+               DateTime.to_date(log_struct.review_datetime)
+
       assert DateTime.to_time(restored_log.review_datetime) |> Time.truncate(:second) ==
-             DateTime.to_time(log_struct.review_datetime) |> Time.truncate(:second)
+               DateTime.to_time(log_struct.review_datetime) |> Time.truncate(:second)
+
       assert restored_log.review_duration == log_struct.review_duration
     end
   end

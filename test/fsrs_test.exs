@@ -17,15 +17,17 @@ defmodule ExFsrsTest do
 
     test "creates a new card with custom values" do
       now = DateTime.utc_now()
-      card = ExFsrs.new(
-        card_id: 12345,
-        state: :review,
-        step: 2,
-        stability: 10.5,
-        difficulty: 4.2,
-        due: now,
-        last_review: now
-      )
+
+      card =
+        ExFsrs.new(
+          card_id: 12345,
+          state: :review,
+          step: 2,
+          stability: 10.5,
+          difficulty: 4.2,
+          due: now,
+          last_review: now
+        )
 
       assert card.card_id == 12345
       assert card.state == :review
@@ -40,15 +42,17 @@ defmodule ExFsrsTest do
   describe "to_map/1" do
     test "converts card to map" do
       now = DateTime.utc_now()
-      card = ExFsrs.new(
-        card_id: 12345,
-        state: :review,
-        step: 2,
-        stability: 10.5,
-        difficulty: 4.2,
-        due: now,
-        last_review: now
-      )
+
+      card =
+        ExFsrs.new(
+          card_id: 12345,
+          state: :review,
+          step: 2,
+          stability: 10.5,
+          difficulty: 4.2,
+          due: now,
+          last_review: now
+        )
 
       map = ExFsrs.to_map(card)
 
@@ -63,15 +67,17 @@ defmodule ExFsrsTest do
 
     test "handles nil last_review" do
       now = DateTime.utc_now()
-      card = ExFsrs.new(
-        card_id: 12345,
-        state: :review,
-        step: 2,
-        stability: 10.5,
-        difficulty: 4.2,
-        due: now,
-        last_review: nil
-      )
+
+      card =
+        ExFsrs.new(
+          card_id: 12345,
+          state: :review,
+          step: 2,
+          stability: 10.5,
+          difficulty: 4.2,
+          due: now,
+          last_review: nil
+        )
 
       map = ExFsrs.to_map(card)
 
@@ -196,10 +202,11 @@ defmodule ExFsrsTest do
       now = DateTime.utc_now()
       yesterday = DateTime.add(now, -1, :day)
 
-      card = ExFsrs.new(
-        stability: 10.0,
-        last_review: yesterday
-      )
+      card =
+        ExFsrs.new(
+          stability: 10.0,
+          last_review: yesterday
+        )
 
       retrievability = ExFsrs.get_retrievability(card, now)
 
@@ -212,10 +219,11 @@ defmodule ExFsrsTest do
       now = DateTime.utc_now()
       ten_days_ago = DateTime.add(now, -10, :day)
 
-      card = ExFsrs.new(
-        stability: 10.0,
-        last_review: ten_days_ago
-      )
+      card =
+        ExFsrs.new(
+          stability: 10.0,
+          last_review: ten_days_ago
+        )
 
       retrievability = ExFsrs.get_retrievability(card, now)
 
