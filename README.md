@@ -1,6 +1,6 @@
 # ExFsrs
 
-**An Elixir implementation of FSRS (Flexible Spaced Repetition Scheduler in Elixir)**
+**An Elixir implementation of FSRS (Free Spaced Repetition Scheduler in Elixir)**
 
 [![Elixir](https://img.shields.io/badge/Lang-Elixir-purple.svg)](https://elixir-lang.org/)
 
@@ -23,7 +23,7 @@ A flexible spaced repetition scheduling implementation in Elixir. This library i
 
 ## Overview
 
-This project implements a variant of the [FSRS (Flexible Spaced Repetition Schedule)](https://www.supermemo.com/en/archives1990-2015/english/ol/sm2) algorithm in Elixir. The code is intended for advanced spaced repetition systems, allowing dynamic interval calculation, difficulty tracking, state transitions, and fuzzing intervals to avoid "review day clumping".
+This project implements a variant of the [FSRS (Free Spaced Repetition Schedule)](https://www.supermemo.com/en/archives1990-2015/english/ol/sm2) algorithm in Elixir. The code is intended for advanced spaced repetition systems, allowing dynamic interval calculation, difficulty tracking, state transitions, and fuzzing intervals to avoid "review day clumping".
 
 Key features:
 - **Adaptive scheduling** based on a card's difficulty, stability, and prior performance.
